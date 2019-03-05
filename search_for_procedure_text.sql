@@ -1,4 +1,4 @@
-DECLARE @SearchText varchar(1000) = 'APVALUATIONCATEGORY';
+DECLARE @SearchText varchar(1000) = 'recordings';
 
 SELECT DISTINCT SPName 
 FROM (
@@ -10,12 +10,12 @@ FROM (
     (SELECT OBJECT_NAME(id) SPName
         FROM SYSCOMMENTS 
         WHERE [text] LIKE '%' + @SearchText + '%' 
-        AND OBJECTPROPERTY(id, 'IsProcedure') = 1 
+        AND (OBJECTPROPERTY(id, 'IsProcedure') = 1 or OBJECTPROPERTY(id, 'IsInlineFunction') = 1 or OBJECTPROPERTY(id, 'IsScalarFunction') = 1 or OBJECTPROPERTY(id, 'IsTableFunction') = 1)
         GROUP BY OBJECT_NAME(id))
     UNION ALL
     (SELECT OBJECT_NAME(object_id) SPName
         FROM sys.sql_modules
-        WHERE OBJECTPROPERTY(object_id, 'IsProcedure') = 1
+        WHERE (OBJECTPROPERTY(object_id, 'IsProcedure') = 1 or OBJECTPROPERTY(object_id, 'IsInlineFunction') = 1 or OBJECTPROPERTY(object_id, 'IsScalarFunction') = 1 or OBJECTPROPERTY(object_id, 'IsTableFunction') = 1)
         AND definition LIKE '%' + @SearchText + '%')
 ) AS T
 ORDER BY T.SPName
