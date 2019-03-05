@@ -1,21 +1,7 @@
 DECLARE @SearchText varchar(1000) = 'recordings';
 
-SELECT DISTINCT SPName 
-FROM (
-    (SELECT ROUTINE_NAME SPName
-        FROM INFORMATION_SCHEMA.ROUTINES 
-        WHERE ROUTINE_DEFINITION LIKE '%' + @SearchText + '%' 
-        AND ROUTINE_TYPE='PROCEDURE')
-    UNION ALL
-    (SELECT OBJECT_NAME(id) SPName
-        FROM SYSCOMMENTS 
-        WHERE [text] LIKE '%' + @SearchText + '%' 
-        AND (OBJECTPROPERTY(id, 'IsProcedure') = 1 or OBJECTPROPERTY(id, 'IsInlineFunction') = 1 or OBJECTPROPERTY(id, 'IsScalarFunction') = 1 or OBJECTPROPERTY(id, 'IsTableFunction') = 1)
-        GROUP BY OBJECT_NAME(id))
-    UNION ALL
-    (SELECT OBJECT_NAME(object_id) SPName
-        FROM sys.sql_modules
-        WHERE (OBJECTPROPERTY(object_id, 'IsProcedure') = 1 or OBJECTPROPERTY(object_id, 'IsInlineFunction') = 1 or OBJECTPROPERTY(object_id, 'IsScalarFunction') = 1 or OBJECTPROPERTY(object_id, 'IsTableFunction') = 1)
-        AND definition LIKE '%' + @SearchText + '%')
-) AS T
-ORDER BY T.SPName
+SELECT sm.object_id, OBJECT_NAME(sm.object_id) AS object_name, o.type, o.type_desc, sm.definition  
+FROM sys.sql_modules AS sm  
+JOIN sys.objects AS o ON sm.object_id = o.object_id  
+where definition LIKE '%' + @SearchText + '%'
+ORDER BY o.type;
