@@ -1,0 +1,2 @@
+--wersja sqla
+select @@version
